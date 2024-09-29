@@ -14,15 +14,20 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
+  Box,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+
+type SortField = 'createdAt' | 'customerName' | 'stage';
+type SortOrder = 'asc' | 'desc';
 
 const JobsList: React.FC = () => {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [filter, setFilter] = useState<JobStage | 'ALL'>('ALL');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [stageFilter, setStageFilter] = useState<JobStage | 'ALL'>('ALL');
+  const [sortField, setSortField] = useState<SortField>('createdAt');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('asc'); // Changed to 'asc'
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -39,13 +44,32 @@ const JobsList: React.FC = () => {
     fetchJobs();
   }, []);
 
-  const filteredAndSortedJobs = jobs
-    .filter(job => filter === 'ALL' || job.stage === filter)
-    .sort((a, b) => {
-      const dateA = new Date(a.createdAt || '').getTime();
-      const dateB = new Date(b.createdAt || '').getTime();
-      return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
+  const sortJobs = (jobsToSort: Job[]): Job[] => {
+    return [...jobsToSort].sort((a, b) => {
+      let comparison = 0;
+      switch (sortField) {
+        case 'createdAt':
+          comparison = new Date(b.createdAt || '').getTime() - new Date(a.createdAt || '').getTime();
+          break;
+        case 'customerName':
+          comparison = `${a.customerInfo?.lastName} ${a.customerInfo?.firstName}`.localeCompare(
+            `${b.customerInfo?.lastName} ${b.customerInfo?.firstName}`
+          );
+          break;
+        case 'stage':
+          comparison = a.stage.localeCompare(b.stage);
+          break;
+      }
+      return sortOrder === 'asc' ? comparison : -comparison;
     });
+  };
+
+  const filterJobs = (jobsToFilter: Job[]): Job[] => {
+    if (stageFilter === 'ALL') return jobsToFilter;
+    return jobsToFilter.filter((job) => job.stage === stageFilter);
+  };
+
+  const sortedAndFilteredJobs = sortJobs(filterJobs(jobs));
 
   if (loading) {
     return (
@@ -70,43 +94,53 @@ const JobsList: React.FC = () => {
       <Typography variant="h4" gutterBottom>
         Jobs List
       </Typography>
-      <Grid container spacing={2} sx={{ mb: 2 }}>
-        <Grid item xs={12} sm={6}>
-          <FormControl fullWidth>
-            <InputLabel>Filter by Stage</InputLabel>
-            <Select
-              value={filter}
-              onChange={(e) => setFilter(e.target.value as JobStage | 'ALL')}
-            >
-              <MenuItem value="ALL">All Stages</MenuItem>
-              {Object.values(JobStage).map((stage) => (
-                <MenuItem key={stage} value={stage}>
-                  {stage}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          <FormControl fullWidth>
-            <InputLabel>Sort by Date</InputLabel>
-            <Select
-              value={sortOrder}
-              onChange={(e) => setSortOrder(e.target.value as 'asc' | 'desc')}
-            >
-              <MenuItem value="asc">Oldest First</MenuItem>
-              <MenuItem value="desc">Newest First</MenuItem>
-            </Select>
-          </FormControl>
-        </Grid>
-      </Grid>
+      <Box mb={2}>
+        <FormControl variant="outlined" size="small" style={{ minWidth: 120, marginRight: 16 }}>
+          <InputLabel>Sort By</InputLabel>
+          <Select
+            value={sortField}
+            onChange={(e) => setSortField(e.target.value as SortField)}
+            label="Sort By"
+          >
+            <MenuItem value="createdAt">Date</MenuItem>
+            <MenuItem value="customerName">Customer Name</MenuItem>
+            <MenuItem value="stage">Stage</MenuItem>
+          </Select>
+        </FormControl>
+        <FormControl variant="outlined" size="small" style={{ minWidth: 120, marginRight: 16 }}>
+          <InputLabel>Order</InputLabel>
+          <Select
+            value={sortOrder}
+            onChange={(e) => setSortOrder(e.target.value as SortOrder)}
+            label="Order"
+          >
+            <MenuItem value="asc">Ascending</MenuItem>
+            <MenuItem value="desc">Descending</MenuItem>
+          </Select>
+        </FormControl>
+        <FormControl variant="outlined" size="small" style={{ minWidth: 120 }}>
+          <InputLabel>Stage</InputLabel>
+          <Select
+            value={stageFilter}
+            onChange={(e) => setStageFilter(e.target.value as JobStage | 'ALL')}
+            label="Stage"
+          >
+            <MenuItem value="ALL">All Stages</MenuItem>
+            {Object.values(JobStage).map((stage) => (
+              <MenuItem key={stage} value={stage}>
+                {stage}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </Box>
       <Grid container spacing={3}>
-        {filteredAndSortedJobs.map((job) => (
+        {sortedAndFilteredJobs.map((job) => (
           <Grid item xs={12} sm={6} md={4} key={job._id}>
             <Card>
               <CardContent>
                 <Typography variant="h6">
-                  {job.customerInfo?.firstName} {job.customerInfo?.lastName}
+                  {job.customerInfo?.lastName}, {job.customerInfo?.firstName}
                 </Typography>
                 <Typography color="textSecondary">
                   Address: {job.customerInfo?.installAddress}

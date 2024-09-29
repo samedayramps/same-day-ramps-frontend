@@ -43,13 +43,26 @@ const RentalRequestDetails: React.FC = () => {
     if (!rentalRequest) return;
 
     try {
-      // Call the new API method to create a job from the rental request
+      await rentalRequestsApi.updateStatus(rentalRequest._id, 'job created');
       const response = await rentalRequestsApi.createJobFromRentalRequest(rentalRequest._id);
-      // Navigate to the new job's detail page
       navigate(`/jobs/${response.data._id}`);
     } catch (err: any) {
       console.error('Failed to create job from rental request', err);
       setError(err.response?.data?.message || 'Failed to create job');
+    }
+  };
+
+  const handleRejectRequest = async () => {
+    if (!rentalRequest) return;
+
+    try {
+      await rentalRequestsApi.updateStatus(rentalRequest._id, 'rejected');
+      // Refresh the rental request data
+      const response = await rentalRequestsApi.getById(rentalRequest._id);
+      setRentalRequest(response.data);
+    } catch (err: any) {
+      console.error('Failed to reject rental request', err);
+      setError(err.response?.data?.message || 'Failed to reject request');
     }
   };
 
@@ -161,7 +174,13 @@ const RentalRequestDetails: React.FC = () => {
           <ListItemText primary="Request Status" />
           <Chip
             label={rentalRequest.status.toUpperCase()}
-            color={rentalRequest.status === 'approved' ? 'success' : 'default'}
+            color={
+              rentalRequest.status === 'pending'
+                ? 'warning'
+                : rentalRequest.status === 'job created'
+                ? 'success'
+                : 'error'
+            }
           />
         </ListItem>
         <Divider component="li" />
@@ -181,16 +200,26 @@ const RentalRequestDetails: React.FC = () => {
         </ListItem>
       </List>
 
-      <Button
-        variant="contained"
-        color="primary"
-        fullWidth
-        style={{ marginTop: '16px' }}
-        onClick={handleCreateJob}
-        disabled={!!rentalRequest.jobId} // Disable button if job already created
-      >
-        {rentalRequest.jobId ? 'Job Already Created' : 'Create Job'}
-      </Button>
+      <Box mt={2} display="flex" justifyContent="space-between">
+        <Button
+          variant="contained"
+          color="primary"
+          style={{ flex: 1, marginRight: '8px' }}
+          onClick={handleCreateJob}
+          disabled={rentalRequest.status !== 'pending'}
+        >
+          {rentalRequest.status === 'job created' ? 'Job Already Created' : 'Create Job'}
+        </Button>
+        <Button
+          variant="contained"
+          color="secondary"
+          style={{ flex: 1, marginLeft: '8px' }}
+          onClick={handleRejectRequest}
+          disabled={rentalRequest.status !== 'pending'}
+        >
+          Reject Request
+        </Button>
+      </Box>
     </Container>
   );
 };

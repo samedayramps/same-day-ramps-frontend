@@ -31,6 +31,18 @@ export interface Schedule {
   timeSlot: string;
 }
 
+export enum QuoteStatus {
+  NOT_SENT = 'NOT_SENT',
+  SENT = 'SENT',
+  PAID = 'PAID'
+}
+
+export enum AgreementStatus {
+  NOT_SENT = 'NOT_SENT',
+  SENT = 'SENT',
+  SIGNED = 'SIGNED'
+}
+
 export interface Job {
   _id?: string; // Make _id optional
   stage: JobStage;
@@ -51,6 +63,13 @@ export interface Job {
   }>;
   createdAt?: string;
   updatedAt?: string;
+  quotePaidOn?: string; // Add this line
+  agreementSignedOn?: string; // Add this line
+  quoteStatus: QuoteStatus; // Add this line
+  agreementStatus: AgreementStatus; // Add this line
+  stripeCustomerId?: string; // Add this line
+  stripeInvoiceId?: string; // Add this line
+  eSignaturesDocumentId?: string; // Add this line
 }
 
 export interface CustomerInfo {

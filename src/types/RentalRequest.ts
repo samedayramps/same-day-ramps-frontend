@@ -26,7 +26,7 @@ export enum SalesStage {
     customerInfo: CustomerInfo;
     rampDetails: RampDetails;
     installAddress: string;
-    status: 'pending' | 'approved' | 'rejected' | 'archived';
+    status: 'pending' | 'job created' | 'rejected';
     salesStage: SalesStage;
     customerId?: string;
     quoteId?: string;

@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { jobsApi, calculatePricing } from '../services/api';
-import { Job, JobStage } from '../types/Job';
+import { Job, JobStage, QuoteStatus, AgreementStatus } from '../types/Job';
 import { RootState } from './store';
 import { PricingCalculation } from '../types/PricingCalculation';
 // Remove the unused import
@@ -34,9 +34,14 @@ export const fetchJob = createAsyncThunk('jobs/fetchJob', async (id: string) => 
 
 export const createJob = createAsyncThunk(
   'jobs/createJob',
-  async (job: Job, { rejectWithValue }) => {
+  async (job: Partial<Job>, { rejectWithValue }) => {
     try {
-      const response = await jobsApi.create(job);
+      const jobWithDefaults = {
+        ...job,
+        quoteStatus: job.quoteStatus || QuoteStatus.NOT_SENT,
+        agreementStatus: job.agreementStatus || AgreementStatus.NOT_SENT,
+      };
+      const response = await jobsApi.create(jobWithDefaults);
       return response.data;
     } catch (error: unknown) {
       if (error instanceof Error) {
@@ -96,6 +101,22 @@ export const deleteJob = createAsyncThunk('jobs/deleteJob', async (id: string) =
   await jobsApi.delete(id);
   return id;
 });
+
+export const initiateStripePayment = createAsyncThunk(
+  'jobs/initiateStripePayment',
+  async (jobId: string) => {
+    const response = await jobsApi.initiateStripePayment(jobId);
+    return response.data;
+  }
+);
+
+export const initiateESignaturesSigning = createAsyncThunk(
+  'jobs/initiateESignaturesSigning',
+  async (jobId: string) => {
+    const response = await jobsApi.initiateESignaturesSigning(jobId);
+    return response.data;
+  }
+);
 
 const jobsSlice = createSlice({
   name: 'jobs',
@@ -157,6 +178,12 @@ const jobsSlice = createSlice({
       .addCase(deleteJob.fulfilled, (state, action) => {
         state.jobs = state.jobs.filter(job => job._id !== action.payload);
         state.currentJob = null;
+      })
+      .addCase(initiateStripePayment.fulfilled, (state, action) => {
+        // Handle successful payment initiation if needed
+      })
+      .addCase(initiateESignaturesSigning.fulfilled, (state, action) => {
+        // Handle successful signing initiation if needed
       });
   },
 });
