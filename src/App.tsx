@@ -25,7 +25,7 @@ const App: React.FC = () => (
         <Route path="/jobs" element={<JobsList />} />
         <Route path="/jobs/new" element={<JobCreationWizard />} />
         <Route path="/jobs/:id" element={<JobDetails />} />
-        <Route path="/jobs/edit/:id" element={<JobCreationWizard />} /> {/* Added this line */}
+        <Route path="/jobs/edit/:id" element={<JobCreationWizard />} />
         <Route path="/settings" element={<SettingsPage />} />
       </Routes>
     </MainLayout>

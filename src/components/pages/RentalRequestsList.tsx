@@ -74,7 +74,7 @@ const RentalRequestsList: React.FC = () => {
                 />
               </CardContent>
               <CardActions>
-              <Button
+                <Button
                   size="small"
                   color="primary"
                   component={Link}
