@@ -74,11 +74,11 @@ const RentalRequestsList: React.FC = () => {
                 />
               </CardContent>
               <CardActions>
-                <Button
+              <Button
                   size="small"
                   color="primary"
                   component={Link}
-                  to={`/rental-request/${request._id}`}
+                  to={`/rental-requests/${request._id}`}
                 >
                   View Details
                 </Button>
