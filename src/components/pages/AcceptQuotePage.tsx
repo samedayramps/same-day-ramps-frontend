@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { Typography, Box, CircularProgress, Button } from '@mui/material';
+import { useParams } from 'react-router-dom';
+import { Typography, Box, CircularProgress } from '@mui/material';
 import { jobsApi } from '../../services/api';
 
 const AcceptQuotePage: React.FC = () => {
@@ -56,9 +56,6 @@ const AcceptQuotePage: React.FC = () => {
         <Typography variant="body1" mt={2}>
           Please contact our support team for assistance.
         </Typography>
-        <Button component={Link} to="/" variant="contained" color="primary" sx={{ mt: 3 }}>
-          Return to Home
-        </Button>
       </Box>
     );
   }
@@ -75,9 +72,6 @@ const AcceptQuotePage: React.FC = () => {
         <Typography variant="body1" mt={2}>
           Please try again or contact support.
         </Typography>
-        <Button component={Link} to="/" variant="contained" color="primary" sx={{ mt: 3 }}>
-          Return to Home
-        </Button>
       </Box>
     );
   }
@@ -90,9 +84,6 @@ const AcceptQuotePage: React.FC = () => {
       <Typography variant="body1">
         Thank you for accepting the quote. We will be in touch shortly to proceed with your ramp rental.
       </Typography>
-      <Button component={Link} to="/" variant="contained" color="primary" sx={{ mt: 3 }}>
-        Return to Home
-      </Button>
     </Box>
   );
 };
