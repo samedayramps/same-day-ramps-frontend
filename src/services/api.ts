@@ -7,7 +7,7 @@ import { PricingVariables } from '../types/PricingVariables';
 import { PricingCalculation } from '../types/PricingCalculation';
 import { RampConfiguration } from '../types/Job';
 
-const USE_LOCAL_API = false; // Set this to false for production
+const USE_LOCAL_API = true; // Set this to false for production
 
 const API_BASE_URL = USE_LOCAL_API 
   ? 'http://localhost:3001/api'
@@ -48,7 +48,6 @@ export const jobsApi = {
     });
   },
   delete: (id: string) => api.delete(`/jobs/${id}`),
-  sendQuote: (id: string) => api.post(`/jobs/${id}/send-quote`),
   updateStage: (id: string, stage: JobStage) => api.put(`/jobs/${id}/stage`, { stage }),
   calculatePricing: (rampConfiguration: RampConfiguration, installAddress: string, warehouseAddress: string) =>
     api.post<PricingCalculation>('/jobs/calculate-pricing', { rampConfiguration, installAddress, warehouseAddress }),
@@ -58,6 +57,10 @@ export const jobsApi = {
     api.post<{ paymentLink: string }>(`/jobs/${jobId}/create-payment-link`, { pricing }),
   createAgreementLink: (jobId: string) => 
     api.post<{ agreementLink: string }>(`/jobs/${jobId}/create-agreement-link`), // New method
+  generateQuote: (id: string) => api.post<{ message: string }>(`/jobs/${id}/generate-quote`),
+  previewQuote: (id: string) => api.get<string>(`/jobs/${id}/preview-quote`),
+  sendGeneratedQuote: (id: string) => api.post<{ message: string }>(`/jobs/${id}/send-generated-quote`),
+  acceptQuote: (id: string) => api.post<{ message: string }>(`/jobs/${id}/accept-quote`),
 };
 
 export const rentalRequestsApi = {

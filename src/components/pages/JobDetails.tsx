@@ -21,6 +21,7 @@ import {
   Snackbar,
   Alert,
 } from '@mui/material';
+import QuoteManager from '../QuoteManager';
 
 const JobDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -211,7 +212,7 @@ const JobDetails: React.FC = () => {
 
   return (
     <Container>
-      <Paper elevation={3} sx={{ p: 4, mt: 5 }}>
+      <Paper elevation={3} sx={{ p: 3, mt: 3 }}>
         <Typography variant="h4" gutterBottom>
           Job Details
         </Typography>
@@ -341,37 +342,45 @@ const JobDetails: React.FC = () => {
               </Button>
             )}
           </Grid>
+
+          {/* Add QuoteManager */}
+          <Grid item xs={12}>
+            <Typography variant="h6" gutterBottom>
+              Quote Management
+            </Typography>
+            <QuoteManager jobId={currentJob._id || ''} />
+          </Grid>
+
+          {/* Delete Confirmation Dialog */}
+          <Dialog
+            open={deleteDialogOpen}
+            onClose={handleCloseDeleteDialog}
+            aria-labelledby="alert-dialog-title"
+            aria-describedby="alert-dialog-description"
+          >
+            <DialogTitle id="alert-dialog-title">{"Delete Job"}</DialogTitle>
+            <DialogContent>
+              <DialogContentText id="alert-dialog-description">
+                Are you sure you want to delete this job? This action cannot be undone.
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleCloseDeleteDialog} color="primary">
+                Cancel
+              </Button>
+              <Button onClick={handleDeleteJob} color="error" autoFocus>
+                Delete
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          {/* Snackbar for Notifications */}
+          <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleCloseSnackbar}>
+            <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} sx={{ width: '100%' }}>
+              {snackbarMessage}
+            </Alert>
+          </Snackbar>
         </Grid>
-
-        {/* Delete Confirmation Dialog */}
-        <Dialog
-          open={deleteDialogOpen}
-          onClose={handleCloseDeleteDialog}
-          aria-labelledby="alert-dialog-title"
-          aria-describedby="alert-dialog-description"
-        >
-          <DialogTitle id="alert-dialog-title">{"Delete Job"}</DialogTitle>
-          <DialogContent>
-            <DialogContentText id="alert-dialog-description">
-              Are you sure you want to delete this job? This action cannot be undone.
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleCloseDeleteDialog} color="primary">
-              Cancel
-            </Button>
-            <Button onClick={handleDeleteJob} color="error" autoFocus>
-              Delete
-            </Button>
-          </DialogActions>
-        </Dialog>
-
-        {/* Snackbar for Notifications */}
-        <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleCloseSnackbar}>
-          <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} sx={{ width: '100%' }}>
-            {snackbarMessage}
-          </Alert>
-        </Snackbar>
       </Paper>
     </Container>
   );
