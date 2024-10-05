@@ -3,8 +3,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../hooks';
-import { fetchJob, updateJobStage as _updateJobStage, deleteJob, createStripePaymentLink, createAgreementLink } from '../../stores/jobsSlice';
-import { JobStage as _JobStage } from '../../types/Job';
+import { fetchJob, deleteJob, createStripePaymentLink, createAgreementLink } from '../../stores/jobsSlice';
+// Removed unused imports: _updateJobStage, _JobStage
 import {
   Container,
   Typography,
