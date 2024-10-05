@@ -11,7 +11,7 @@ const USE_LOCAL_API = false; // Set this to false for production
 
 const API_BASE_URL = USE_LOCAL_API 
   ? 'http://localhost:3001/api'
-  : 'https://samedayramps-016e8e090b17.herokuapp.com/api'; // Ensure this is correct
+  : 'http://strangely-winning-dogfish.ngrok-free.app/api'; // Ensure this is correct
 
 const api = axios.create({
   baseURL: API_BASE_URL,
