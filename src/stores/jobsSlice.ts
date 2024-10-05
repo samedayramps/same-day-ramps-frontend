@@ -118,6 +118,30 @@ export const initiateESignaturesSigning = createAsyncThunk(
   }
 );
 
+export const createStripePaymentLink = createAsyncThunk(
+  'jobs/createStripePaymentLink',
+  async (jobId: string, { getState }) => {
+    const state = getState() as RootState;
+    const currentJob = state.jobs.currentJob;
+    
+    if (!currentJob) {
+      throw new Error('No current job');
+    }
+
+    const response = await jobsApi.createStripePaymentLink(jobId, currentJob.pricing);
+    return response.data.paymentLink;
+  }
+);
+
+// New Thunk for Creating Agreement Link
+export const createAgreementLink = createAsyncThunk(
+  'jobs/createAgreementLink',
+  async (jobId: string) => {
+    const response = await jobsApi.createAgreementLink(jobId);
+    return response.data.agreementLink;
+  }
+);
+
 const jobsSlice = createSlice({
   name: 'jobs',
   initialState,
@@ -184,6 +208,19 @@ const jobsSlice = createSlice({
       })
       .addCase(initiateESignaturesSigning.fulfilled, (state, action) => {
         // Handle successful signing initiation if needed
+      })
+      .addCase(createStripePaymentLink.fulfilled, (state, action) => {
+        if (state.currentJob) {
+          state.currentJob.paymentLinkUrl = action.payload;
+        }
+      })
+      .addCase(createAgreementLink.fulfilled, (state, action) => {
+        if (state.currentJob) {
+          state.currentJob.agreementLinkUrl = action.payload;
+        }
+      })
+      .addCase(createAgreementLink.rejected, (state, action) => {
+        state.error = action.error.message || 'Failed to create agreement link';
       });
   },
 });

@@ -3,8 +3,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../hooks';
-import { fetchJob, updateJobStage, deleteJob, updateJob } from '../../stores/jobsSlice';
-import { JobStage, Job, QuoteStatus, AgreementStatus } from '../../types/Job';
+import { fetchJob, updateJobStage as _updateJobStage, deleteJob, createStripePaymentLink, createAgreementLink } from '../../stores/jobsSlice';
+import { JobStage as _JobStage } from '../../types/Job';
 import {
   Container,
   Typography,
@@ -20,14 +20,7 @@ import {
   CircularProgress,
   Snackbar,
   Alert,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  TextField,
 } from '@mui/material';
-import PaymentInitiation from '../stripe/PaymentInitiation';
-import DocumentSigning from '../eSignatures/DocumentSigning';
 
 const JobDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -39,13 +32,6 @@ const JobDetails: React.FC = () => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState<'error' | 'warning' | 'info' | 'success'>('error');
-
-  // State for Editable Fields
-  const [stage, setStage] = useState<JobStage | ''>('');
-  const [quotePaidOn, setQuotePaidOn] = useState<string>('');
-  const [agreementSignedOn, setAgreementSignedOn] = useState<string>('');
-  const [quoteStatus, setQuoteStatus] = useState<QuoteStatus>(QuoteStatus.NOT_SENT);
-  const [agreementStatus, setAgreementStatus] = useState<AgreementStatus>(AgreementStatus.NOT_SENT);
 
   // Fetch Job Details
   const fetchJobDetails = useCallback(async () => {
@@ -61,32 +47,14 @@ const JobDetails: React.FC = () => {
   // Update Local State when Job Data is Fetched
   useEffect(() => {
     if (currentJob) {
-      setStage(currentJob.stage);
-      setQuotePaidOn(currentJob.quotePaidOn || '');
-      setAgreementSignedOn(currentJob.agreementSignedOn || '');
-      setQuoteStatus(currentJob.quoteStatus || QuoteStatus.NOT_SENT);
-      setAgreementStatus(currentJob.agreementStatus || AgreementStatus.NOT_SENT);
+      // Remove these setters
+      // setStage(currentJob.stage);
+      // setQuotePaidOn(currentJob.quotePaidOn || '');
+      // setAgreementSignedOn(currentJob.agreementSignedOn || '');
+      // setQuoteStatus(currentJob.quoteStatus || QuoteStatus.NOT_SENT);
+      // setAgreementStatus(currentJob.agreementStatus || AgreementStatus.NOT_SENT);
     }
   }, [currentJob]);
-
-  const handleSendQuote = async () => {
-    if (currentJob && currentJob._id) {
-      try {
-        await dispatch(updateJobStage({ id: currentJob._id, stage: JobStage.QUOTE_SENT })).unwrap();
-        setSnackbarMessage('Quote sent successfully');
-        setSnackbarSeverity('success');
-        setSnackbarOpen(true);
-      } catch (error) {
-        setSnackbarMessage('Failed to send quote');
-        setSnackbarSeverity('error');
-        setSnackbarOpen(true);
-      }
-    } else {
-      setSnackbarMessage('Cannot send quote: Job ID is missing');
-      setSnackbarSeverity('error');
-      setSnackbarOpen(true);
-    }
-  };
 
   const handleEditJob = () => {
     if (currentJob && currentJob._id) {
@@ -128,25 +96,78 @@ const JobDetails: React.FC = () => {
     setSnackbarOpen(false);
   };
 
-  // Handle Save Changes for Stage, Dates, and Statuses
-  const handleSaveChanges = async () => {
-    if (!currentJob) return;
-
-    const updatedData: Partial<Job> = {
-      stage: stage || currentJob.stage,
-      quotePaidOn: quotePaidOn || undefined,
-      agreementSignedOn: agreementSignedOn || undefined,
-      quoteStatus,
-      agreementStatus,
-    };
-
-    try {
-      await dispatch(updateJob({ _id: currentJob._id, ...updatedData })).unwrap();
-      setSnackbarMessage('Job details updated successfully');
-      setSnackbarSeverity('success');
+  const handleCreatePaymentLink = async () => {
+    if (currentJob && currentJob._id) {
+      try {
+        await dispatch(createStripePaymentLink(currentJob._id)).unwrap();
+        setSnackbarMessage('Payment link created successfully');
+        setSnackbarSeverity('success');
+        setSnackbarOpen(true);
+      } catch (error) {
+        setSnackbarMessage('Failed to create payment link');
+        setSnackbarSeverity('error');
+        setSnackbarOpen(true);
+      }
+    } else {
+      setSnackbarMessage('Cannot create payment link: Job ID is missing');
+      setSnackbarSeverity('error');
       setSnackbarOpen(true);
-    } catch (err: any) {
-      setSnackbarMessage('Failed to update job details');
+    }
+  };
+
+  const handleRegeneratePaymentLink = async () => {
+    if (currentJob && currentJob._id) {
+      try {
+        await dispatch(createStripePaymentLink(currentJob._id)).unwrap();
+        setSnackbarMessage('Payment link regenerated successfully');
+        setSnackbarSeverity('success');
+        setSnackbarOpen(true);
+      } catch (error) {
+        setSnackbarMessage('Failed to regenerate payment link');
+        setSnackbarSeverity('error');
+        setSnackbarOpen(true);
+      }
+    } else {
+      setSnackbarMessage('Cannot regenerate payment link: Job ID is missing');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+    }
+  };
+
+  // New Handlers for Agreement Link
+  const handleCreateAgreementLink = async () => {
+    if (currentJob && currentJob._id) {
+      try {
+        await dispatch(createAgreementLink(currentJob._id)).unwrap();
+        setSnackbarMessage('Agreement link created successfully');
+        setSnackbarSeverity('success');
+        setSnackbarOpen(true);
+      } catch (error) {
+        setSnackbarMessage('Failed to create agreement link');
+        setSnackbarSeverity('error');
+        setSnackbarOpen(true);
+      }
+    } else {
+      setSnackbarMessage('Cannot create agreement link: Job ID is missing');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+    }
+  };
+
+  const handleRegenerateAgreementLink = async () => {
+    if (currentJob && currentJob._id) {
+      try {
+        await dispatch(createAgreementLink(currentJob._id)).unwrap();
+        setSnackbarMessage('Agreement link regenerated successfully');
+        setSnackbarSeverity('success');
+        setSnackbarOpen(true);
+      } catch (error) {
+        setSnackbarMessage('Failed to regenerate agreement link');
+        setSnackbarSeverity('error');
+        setSnackbarOpen(true);
+      }
+    } else {
+      setSnackbarMessage('Cannot regenerate agreement link: Job ID is missing');
       setSnackbarSeverity('error');
       setSnackbarOpen(true);
     }
@@ -195,10 +216,12 @@ const JobDetails: React.FC = () => {
           Job Details
         </Typography>
 
-        <Grid container spacing={3}>
+        <Grid container spacing={4}>
           {/* Customer Information */}
-          <Grid item xs={12} md={6}>
-            <Typography variant="h6">Customer Information</Typography>
+          <Grid item xs={12} md={6} lg={4}>
+            <Typography variant="h6" gutterBottom>
+              Customer Information
+            </Typography>
             <Typography>Name: {currentJob.customerInfo?.firstName} {currentJob.customerInfo?.lastName}</Typography>
             <Typography>Phone: {currentJob.customerInfo?.phone}</Typography>
             <Typography>Email: {currentJob.customerInfo?.email}</Typography>
@@ -208,15 +231,19 @@ const JobDetails: React.FC = () => {
           </Grid>
 
           {/* Ramp Configuration */}
-          <Grid item xs={12} md={6}>
-            <Typography variant="h6">Ramp Configuration</Typography>
+          <Grid item xs={12} md={6} lg={4}>
+            <Typography variant="h6" gutterBottom>
+              Ramp Configuration
+            </Typography>
             {currentJob.rampConfiguration?.components && renderRampComponents(currentJob.rampConfiguration.components)}
             <Typography>Total Length: {currentJob.rampConfiguration?.totalLength} ft</Typography>
           </Grid>
 
           {/* Pricing Details */}
-          <Grid item xs={12} md={6}>
-            <Typography variant="h6">Pricing Details</Typography>
+          <Grid item xs={12} md={6} lg={4}>
+            <Typography variant="h6" gutterBottom>
+              Pricing Details
+            </Typography>
             <Typography>Delivery Fee: {formatCurrency(currentJob.pricing?.deliveryFee)}</Typography>
             <Typography>Install Fee: {formatCurrency(currentJob.pricing?.installFee)}</Typography>
             <Typography>Monthly Rate: {formatCurrency(currentJob.pricing?.monthlyRate)}</Typography>
@@ -224,171 +251,128 @@ const JobDetails: React.FC = () => {
           </Grid>
 
           {/* Installation Schedule */}
-          <Grid item xs={12} md={6}>
-            <Typography variant="h6">Installation Schedule</Typography>
+          <Grid item xs={12} md={6} lg={4}>
+            <Typography variant="h6" gutterBottom>
+              Installation Schedule
+            </Typography>
             <Typography>Date & Time: {formatDate(currentJob.installationSchedule?.date || null)}</Typography>
           </Grid>
 
-          {/* Job Details and Editable Fields */}
+          {/* Action Buttons */}
           <Grid item xs={12}>
-            <Typography variant="h6">Job Information</Typography>
-            <Grid container spacing={2}>
-              {/* Job ID and Stage Selector */}
-              <Grid item xs={12} md={4}>
-                <Typography>Job ID: {currentJob._id}</Typography>
-              </Grid>
-              <Grid item xs={12} md={4}>
-                <FormControl fullWidth variant="outlined" size="small">
-                  <InputLabel>Stage</InputLabel>
-                  <Select
-                    label="Stage"
-                    value={stage}
-                    onChange={(e) => setStage(e.target.value as JobStage)}
-                  >
-                    {Object.values(JobStage).map((stageOption) => (
-                      <MenuItem key={stageOption} value={stageOption}>
-                        {stageOption.replace(/([A-Z])/g, ' $1').trim()}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-            </Grid>
-
-            {/* Quote and Agreement Status */}
-            <Grid container spacing={2} sx={{ mt: 2 }}>
-              <Grid item xs={12} md={6}>
-                <FormControl fullWidth variant="outlined" size="small">
-                  <InputLabel>Quote Status</InputLabel>
-                  <Select
-                    value={quoteStatus}
-                    onChange={(e) => setQuoteStatus(e.target.value as QuoteStatus)}
-                    label="Quote Status"
-                  >
-                    {Object.values(QuoteStatus).map((status) => (
-                      <MenuItem key={status} value={status}>
-                        {status.replace(/_/g, ' ')}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <FormControl fullWidth variant="outlined" size="small">
-                  <InputLabel>Agreement Status</InputLabel>
-                  <Select
-                    value={agreementStatus}
-                    onChange={(e) => setAgreementStatus(e.target.value as AgreementStatus)}
-                    label="Agreement Status"
-                  >
-                    {Object.values(AgreementStatus).map((status) => (
-                      <MenuItem key={status} value={status}>
-                        {status.replace(/_/g, ' ')}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-            </Grid>
-
-            {/* Quote Paid On and Agreement Signed On */}
-            <Grid container spacing={2} sx={{ mt: 2 }}>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  label="Quote Paid On"
-                  type="date"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  InputLabelProps={{
-                    shrink: true,
-                  }}
-                  value={quotePaidOn}
-                  onChange={(e) => setQuotePaidOn(e.target.value)}
-                />
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <TextField
-                  label="Agreement Signed On"
-                  type="date"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  InputLabelProps={{
-                    shrink: true,
-                  }}
-                  value={agreementSignedOn}
-                  onChange={(e) => setAgreementSignedOn(e.target.value)}
-                />
-              </Grid>
-            </Grid>
+            <Box display="flex" justifyContent="flex-end" gap={2}>
+              <Button variant="contained" color="secondary" onClick={handleEditJob}>
+                Edit Job
+              </Button>
+              <Button variant="contained" color="error" onClick={handleOpenDeleteDialog}>
+                Delete Job
+              </Button>
+            </Box>
           </Grid>
 
-          {/* New fields for Stripe and eSignatures */}
-          <Grid item xs={12}>
-            <Typography variant="h6">Payment and Document Information</Typography>
-            <Typography>Stripe Customer ID: {currentJob.stripeCustomerId || 'Not set'}</Typography>
-            <Typography>Stripe Invoice ID: {currentJob.stripeInvoiceId || 'Not set'}</Typography>
-            <Typography>eSignatures Document ID: {currentJob.eSignaturesDocumentId || 'Not set'}</Typography>
+          {/* Payment Link */}
+          <Grid item xs={12} md={6} lg={4}>
+            <Typography variant="h6" gutterBottom>
+              Payment
+            </Typography>
+            {currentJob?.paymentLinkUrl ? (
+              <>
+                <Typography>Payment Link: {currentJob.paymentLinkUrl}</Typography>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => window.open(currentJob.paymentLinkUrl, '_blank')}
+                  sx={{ mr: 2, mt: 1 }}
+                >
+                  Open Payment Link
+                </Button>
+                <Button
+                  variant="outlined"
+                  color="primary"
+                  onClick={handleRegeneratePaymentLink}
+                  sx={{ mt: 1 }}
+                >
+                  Regenerate Payment Link
+                </Button>
+              </>
+            ) : (
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleCreatePaymentLink}
+              >
+                Generate Payment Link
+              </Button>
+            )}
           </Grid>
 
-          {/* Buttons for initiating payment and document signing */}
-          <Grid item xs={12}>
-            <PaymentInitiation jobId={currentJob._id!} />
-            <DocumentSigning jobId={currentJob._id!} />
+          {/* Agreement Link */}
+          <Grid item xs={12} md={6} lg={4}>
+            <Typography variant="h6" gutterBottom>
+              Agreement
+            </Typography>
+            {currentJob?.agreementLinkUrl ? (
+              <>
+                <Typography>Agreement Link: {currentJob.agreementLinkUrl}</Typography>
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  onClick={() => window.open(currentJob.agreementLinkUrl, '_blank')}
+                  sx={{ mr: 2, mt: 1 }}
+                >
+                  Open Agreement Link
+                </Button>
+                <Button
+                  variant="outlined"
+                  color="secondary"
+                  onClick={handleRegenerateAgreementLink}
+                  sx={{ mt: 1 }}
+                >
+                  Regenerate Agreement Link
+                </Button>
+              </>
+            ) : (
+              <Button
+                variant="contained"
+                color="secondary"
+                onClick={handleCreateAgreementLink}
+              >
+                Generate Agreement Link
+              </Button>
+            )}
           </Grid>
         </Grid>
 
-        {/* Action Buttons */}
-        <Box mt={3} display="flex" justifyContent="space-between" alignItems="center">
-          <Box>
-            <Button variant="contained" color="primary" onClick={handleSendQuote} sx={{ mr: 2 }}>
-              Send Quote
+        {/* Delete Confirmation Dialog */}
+        <Dialog
+          open={deleteDialogOpen}
+          onClose={handleCloseDeleteDialog}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">{"Delete Job"}</DialogTitle>
+          <DialogContent>
+            <DialogContentText id="alert-dialog-description">
+              Are you sure you want to delete this job? This action cannot be undone.
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseDeleteDialog} color="primary">
+              Cancel
             </Button>
-            <Button variant="contained" color="secondary" onClick={handleEditJob} sx={{ mr: 2 }}>
-              Edit Job
+            <Button onClick={handleDeleteJob} color="error" autoFocus>
+              Delete
             </Button>
-            <Button variant="contained" color="error" onClick={handleOpenDeleteDialog}>
-              Delete Job
-            </Button>
-          </Box>
-          <Box>
-            <Button variant="outlined" color="success" onClick={handleSaveChanges} disabled={!id}>
-              Save Changes
-            </Button>
-          </Box>
-        </Box>
+          </DialogActions>
+        </Dialog>
+
+        {/* Snackbar for Notifications */}
+        <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleCloseSnackbar}>
+          <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} sx={{ width: '100%' }}>
+            {snackbarMessage}
+          </Alert>
+        </Snackbar>
       </Paper>
-
-      {/* Delete Confirmation Dialog */}
-      <Dialog
-        open={deleteDialogOpen}
-        onClose={handleCloseDeleteDialog}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
-      >
-        <DialogTitle id="alert-dialog-title">{"Delete Job"}</DialogTitle>
-        <DialogContent>
-          <DialogContentText id="alert-dialog-description">
-            Are you sure you want to delete this job? This action cannot be undone.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDeleteDialog} color="primary">
-            Cancel
-          </Button>
-          <Button onClick={handleDeleteJob} color="error" autoFocus>
-            Delete
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Snackbar for Notifications */}
-      <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleCloseSnackbar}>
-        <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} sx={{ width: '100%' }}>
-          {snackbarMessage}
-        </Alert>
-      </Snackbar>
     </Container>
   );
 };

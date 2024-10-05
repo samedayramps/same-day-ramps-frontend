@@ -70,6 +70,9 @@ export interface Job {
   stripeCustomerId?: string; // Add this line
   stripeInvoiceId?: string; // Add this line
   eSignaturesDocumentId?: string; // Add this line
+  stripePaymentLink?: string; // Add this line
+  paymentLinkUrl?: string; // Add this line
+  agreementLinkUrl?: string; // New eSignatures.io Agreement Link
 }
 
 export interface CustomerInfo {

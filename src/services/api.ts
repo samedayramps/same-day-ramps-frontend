@@ -7,11 +7,11 @@ import { PricingVariables } from '../types/PricingVariables';
 import { PricingCalculation } from '../types/PricingCalculation';
 import { RampConfiguration } from '../types/Job';
 
-const USE_LOCAL_API = true; // Set this to false to use the production API
+const USE_LOCAL_API = false; // Set this to false for production
 
 const API_BASE_URL = USE_LOCAL_API 
   ? 'http://localhost:3001/api'
-  : (process.env.REACT_APP_API_BASE_URL || 'https://samedayramps-016e8e090b17.herokuapp.com/api');
+  : 'https://samedayramps-016e8e090b17.herokuapp.com/api'; // Ensure this is correct
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -54,6 +54,10 @@ export const jobsApi = {
     api.post<PricingCalculation>('/jobs/calculate-pricing', { rampConfiguration, installAddress, warehouseAddress }),
   initiateStripePayment: (jobId: string) => api.post<{ clientSecret: string }>(`/jobs/${jobId}/initiate-payment`),
   initiateESignaturesSigning: (jobId: string) => api.post<{ signingUrl: string }>(`/jobs/${jobId}/initiate-signing`),
+  createStripePaymentLink: (jobId: string, pricing: Job['pricing']) => 
+    api.post<{ paymentLink: string }>(`/jobs/${jobId}/create-payment-link`, { pricing }),
+  createAgreementLink: (jobId: string) => 
+    api.post<{ agreementLink: string }>(`/jobs/${jobId}/create-agreement-link`), // New method
 };
 
 export const rentalRequestsApi = {
@@ -63,7 +67,6 @@ export const rentalRequestsApi = {
     api.post<RentalRequest>('/rental-requests', rentalRequest),
   archive: (id: string) => api.post(`/rental-requests/${id}/archive`),
   delete: (id: string) => api.delete(`/rental-requests/${id}`),
-  // New method to create a job from a rental request
   createJobFromRentalRequest: (id: string) => api.post<Job>(`/rental-requests/${id}/create-job`),
   updateStatus: (id: string, status: 'pending' | 'job created' | 'rejected') =>
     api.put<RentalRequest>(`/rental-requests/${id}/status`, { status }),
