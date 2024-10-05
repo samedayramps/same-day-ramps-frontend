@@ -7,7 +7,7 @@ import { PricingVariables } from '../types/PricingVariables';
 import { PricingCalculation } from '../types/PricingCalculation';
 import { RampConfiguration } from '../types/Job';
 
-const USE_LOCAL_API = true; // Set this to false for production
+const USE_LOCAL_API = false; // Set this to false for production
 
 const API_BASE_URL = USE_LOCAL_API 
   ? 'http://localhost:3001/api'
