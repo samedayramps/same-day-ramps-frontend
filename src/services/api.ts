@@ -7,11 +7,7 @@ import { PricingVariables } from '../types/PricingVariables';
 import { PricingCalculation } from '../types/PricingCalculation';
 import { RampConfiguration } from '../types/Job';
 
-const USE_LOCAL_API = false; // Set this to false for production
-
-const API_BASE_URL = USE_LOCAL_API 
-  ? 'http://localhost:3001/api'
-  : 'https://strangely-winning-dogfish.ngrok-free.app/api'; // Ensure this is correct
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://strangely-winning-dogfish.ngrok-free.app/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
