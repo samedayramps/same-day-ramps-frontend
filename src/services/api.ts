@@ -7,7 +7,6 @@ import { PricingVariables } from '../types/PricingVariables';
 import { PricingCalculation } from '../types/PricingCalculation';
 import { RampConfiguration } from '../types/Job';
 
-// Ensure the environment variable is prefixed with REACT_APP_
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://samedayramps-016e8e090b17.herokuapp.com/api';
 
 const api = axios.create({
