@@ -114,31 +114,31 @@ export const jobsApi = {
 export const rentalRequestsApi = {
   getAll: () => {
     logApiCall('rentalRequestsApi.getAll');
-    return api.get<RentalRequest[]>('/rental-requests');
+    return api.get<RentalRequest[]>('/rental-request');
   },
   getById: (id: string) => {
     logApiCall('rentalRequestsApi.getById', { id });
-    return api.get<RentalRequest>(`/rental-requests/${id}`);
+    return api.get<RentalRequest>(`/rental-request/${id}`);
   },
   create: (rentalRequest: Omit<RentalRequest, '_id' | 'status' | 'salesStage' | 'createdAt' | 'updatedAt'>) => {
     logApiCall('rentalRequestsApi.create', { rentalRequest });
-    return api.post<RentalRequest>('/rental-requests', rentalRequest);
+    return api.post<RentalRequest>('/rental-request', rentalRequest);
   },
   archive: (id: string) => {
     logApiCall('rentalRequestsApi.archive', { id });
-    return api.post(`/rental-requests/${id}/archive`);
+    return api.post(`/rental-request/${id}/archive`);
   },
   delete: (id: string) => {
     logApiCall('rentalRequestsApi.delete', { id });
-    return api.delete(`/rental-requests/${id}`);
+    return api.delete(`/rental-request/${id}`);
   },
   createJobFromRentalRequest: (id: string) => {
     logApiCall('rentalRequestsApi.createJobFromRentalRequest', { id });
-    return api.post<Job>(`/rental-requests/${id}/create-job`);
+    return api.post<Job>(`/rental-request/${id}/create-job`);
   },
   updateStatus: (id: string, status: 'pending' | 'job created' | 'rejected') => {
     logApiCall('rentalRequestsApi.updateStatus', { id, status });
-    return api.put<RentalRequest>(`/rental-requests/${id}/status`, { status });
+    return api.put<RentalRequest>(`/rental-request/${id}/status`, { status });
   },
 };
 
