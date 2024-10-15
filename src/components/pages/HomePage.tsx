@@ -16,7 +16,9 @@ const HomePage: React.FC = () => {
   }, [dispatch]);
 
   // Filter pending rental requests
-  const pendingRequests = rentalRequests.filter((request) => request.status === 'pending');
+  const pendingRequests = Array.isArray(rentalRequests) 
+    ? rentalRequests.filter((request) => request.status === 'pending')
+    : [];
 
   return (
     <Container>
@@ -55,6 +57,8 @@ const HomePage: React.FC = () => {
         <Typography variant="h6" color="error">
           {error}
         </Typography>
+      ) : !Array.isArray(rentalRequests) ? (
+        <Typography>No rental requests data available.</Typography>
       ) : pendingRequests.length === 0 ? (
         <Typography>No pending rental requests.</Typography>
       ) : (

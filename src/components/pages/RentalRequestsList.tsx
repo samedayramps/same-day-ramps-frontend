@@ -81,7 +81,9 @@ const RentalRequestsList: React.FC = () => {
     return requests.filter((request) => request.status === statusFilter);
   };
 
-  const sortedAndFilteredRequests = sortRequests(filterRequests(rentalRequests));
+  const sortedAndFilteredRequests = Array.isArray(rentalRequests)
+    ? sortRequests(filterRequests(rentalRequests))
+    : [];
 
   return (
     <Container>
